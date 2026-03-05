@@ -241,19 +241,30 @@ def render_sidebar() -> str:
         st.markdown("---")
 
         # イベント数サマリー
-       open_events = [e for e in events if getattr(e, 'is_open', True)]
-if open_events:
-    wait_list = []
-    for e in open_events:
-        try:
-            # get_metrics() が失敗してもアプリを止めない
-            m = e.get_metrics()
-            wait_list.append(m.wait_minutes)
-        except:
-            continue
-    avg_wait = sum(wait_list) / len(wait_list) if wait_list else 0
-else:
-    avg_wait = 0
+       # --- サイドバー内の統計表示部分（ここから入れ替え） ---
+    # 全イベントから開催中のものを抽出（属性がなくてもTrueとする安全設計）
+    open_events = [e for e in events if getattr(e, 'is_open', True)]
+
+    if open_events:
+        wait_list = []
+        for e in open_events:
+            try:
+                m = e.get_metrics()
+                wait_list.append(m.wait_minutes)
+            except Exception:
+                continue
+        avg_wait = sum(wait_list) / len(wait_list) if wait_list else 0
+    else:
+        avg_wait = 0
+
+    # 統計の表示（デザイン維持）
+    st.sidebar.markdown(f"""
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);">
+            <div style="color: rgba(255,255,255,0.7); font-size: 12px;">現在の平均待ち時間</div>
+            <div style="color: white; font-size: 28px; font-weight: 800;">{int(avg_wait)}<span style="font-size: 14px; margin-left: 4px;">分</span></div>
+        </div>
+    """, unsafe_allow_html=True)
+    # --- ここまで ---
 
             st.markdown(f"""
             <div style="font-size: 11px; color: #94A3B8; margin-bottom: 8px;">📊 現在の状況</div>
