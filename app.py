@@ -241,11 +241,19 @@ def render_sidebar() -> str:
         st.markdown("---")
 
         # イベント数サマリー
-        events = st.session_state.get("events", [])
-        if events:
-            open_count = sum(1 for e in events if e.is_open)
-            avg_wait = sum(e.get_metrics().wait_minutes for e in events if e.is_open)
-            avg_wait = int(avg_wait / max(open_count, 1))
+       open_events = [e for e in events if getattr(e, 'is_open', True)]
+if open_events:
+    wait_list = []
+    for e in open_events:
+        try:
+            # get_metrics() が失敗してもアプリを止めない
+            m = e.get_metrics()
+            wait_list.append(m.wait_minutes)
+        except:
+            continue
+    avg_wait = sum(wait_list) / len(wait_list) if wait_list else 0
+else:
+    avg_wait = 0
 
             st.markdown(f"""
             <div style="font-size: 11px; color: #94A3B8; margin-bottom: 8px;">📊 現在の状況</div>
