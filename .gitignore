@@ -1,0 +1,74 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# FestivalFlow AI — .gitignore
+# Python標準 + 環境変数 + キャッシュ + IDE設定
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# ── 環境変数（シークレット：絶対にコミットしない）──────────
+.env
+.env.local
+.env.*.local
+*.secret
+
+# ── Streamlit シークレット（絶対にコミットしない）──────────
+.streamlit/secrets.toml
+
+# ── Pythonキャッシュ ────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# ── ビルドアーティファクト ──────────────────────────────────
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# ── 仮想環境 ────────────────────────────────────────────────
+venv/
+env/
+ENV/
+.venv/
+.env/
+env.bak/
+venv.bak/
+
+# ── テストキャッシュ ────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+coverage.xml
+*.cover
+
+# ── IDE設定 ─────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── ログファイル ────────────────────────────────────────────
+*.log
+logs/
+
+# ── Jupyter Notebook ────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── 型チェック ──────────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ── データファイル（個人情報を含む可能性）──────────────────
+*.csv
+!tests/fixtures/*.csv
+
+# ── Streamlit キャッシュ ────────────────────────────────────
+.streamlit/
