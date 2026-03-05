@@ -7,51 +7,52 @@ FestivalFlow AI — components/event_card.py
 """
 
 import streamlit as st
-# ↓ これが抜けていたため NameError が起きていました
 from core.data_manager import Event 
 from core.queue_models import calculate_trend, get_recommendation_reason
 
 def render_event_card(event: Event, show_details: bool = True) -> None:
-    """1件のイベントカードを描画（クオリティ維持版）"""
     metrics = event.get_metrics()
     history_lengths = [h.queue_length for h in event.history]
     trend = calculate_trend(history_lengths)
-    trend_color = {"↑": "#EF4444", "↓": "#22C55E", "→": "#6B7280"}.get(trend, "#6B7280")
+    trend_color = {"↑": "#EF4444", "↓": "#22C55E", "→": "#64748B"}.get(trend, "#64748B")
     
+    # 背景色の定義
     bg_colors = {
-        "LOW": "linear-gradient(135deg, #F0FDF4, #DCFCE7)",
-        "MODERATE": "linear-gradient(135deg, #FEFCE8, #FEF9C3)",
-        "HIGH": "linear-gradient(135deg, #FFF7ED, #FFEDD5)",
-        "CRITICAL": "linear-gradient(135deg, #FFF1F2, #FFE4E6)",
-        "SATURATED": "linear-gradient(135deg, #FFF1F2, #FECDD3)",
+        "LOW": "#F0FDF4",      # 薄い緑
+        "MODERATE": "#FEFCE8", # 薄い黄
+        "HIGH": "#FFF7ED",     # 薄いオレンジ
+        "CRITICAL": "#FFF1F2",  # 薄い赤
+        "SATURATED": "#FFF1F2",
     }
-    bg_color = bg_colors.get(metrics.status, "white")
+    bg_color = bg_colors.get(metrics.status, "#FFFFFF")
 
+    # HTML構築：colorに !important をつけて、ダークモードの強制白文字を回避します
     card_html = f"""
     <div style="background: {bg_color}; border: 2px solid {metrics.color}; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
             <div>
                 <span style="font-size:28px;">{event.emoji}</span>
-                <span style="font-size:18px; font-weight:700; color:#0F172A; margin-left:8px;">{event.name}</span>
-                <div style="color:#475569; font-size:13px; margin-top:4px;">📍 {event.classroom}（{event.floor}F）</div>
+                <span style="font-size:18px; font-weight:700; color:#0F172A !important; margin-left:8px;">{event.name}</span>
+                <div style="color:#475569 !important; font-size:13px; margin-top:4px; font-weight:500;">📍 {event.classroom}（{event.floor}F）</div>
             </div>
             <div style="text-align:right;">
-                <div style="font-size:32px; font-weight:800; color:{metrics.color};">{metrics.wait_minutes}<span style="font-size:14px;">分待ち</span></div>
-                <div style="color:{metrics.color}; font-weight:600; font-size:14px;">{metrics.emoji} {metrics.label}</div>
+                <div style="font-size:32px; font-weight:800; color:{metrics.color} !important; line-height:1;">{metrics.wait_minutes}<span style="font-size:14px;">分待ち</span></div>
+                <div style="color:{metrics.color} !important; font-weight:700; font-size:14px; margin-top:4px;">{metrics.emoji} {metrics.label}</div>
             </div>
         </div>
-        <div style="display:flex; gap:12px; margin-top:12px;">
-            <div style="background:rgba(255,255,255,0.7); border-radius:8px; padding:8px; flex:1; text-align:center;">
-                <div style="color:#64748B; font-size:10px;">🚶 行列</div>
-                <div style="font-size:18px; font-weight:700;">{event.queue_length}人</div>
+        
+        <div style="display:flex; gap:12px; margin-top:16px;">
+            <div style="background:rgba(255,255,255,0.8); border-radius:8px; padding:8px; flex:1; text-align:center; border:1px solid rgba(0,0,0,0.05);">
+                <div style="color:#64748B !important; font-size:11px; font-weight:600; margin-bottom:2px;">🚶 行列</div>
+                <div style="font-size:18px; font-weight:800; color:#1E293B !important;">{event.queue_length}<span style="font-size:11px; font-weight:600;">人</span></div>
             </div>
-            <div style="background:rgba(255,255,255,0.7); border-radius:8px; padding:8px; flex:1; text-align:center;">
-                <div style="color:#64748B; font-size:10px;">📊 利用率</div>
-                <div style="font-size:18px; font-weight:700;">{round(metrics.utilization * 100)}%</div>
+            <div style="background:rgba(255,255,255,0.8); border-radius:8px; padding:8px; flex:1; text-align:center; border:1px solid rgba(0,0,0,0.05);">
+                <div style="color:#64748B !important; font-size:11px; font-weight:600; margin-bottom:2px;">📊 利用率</div>
+                <div style="font-size:18px; font-weight:800; color:#1E293B !important;">{round(metrics.utilization * 100)}<span style="font-size:11px; font-weight:600;">%</span></div>
             </div>
-            <div style="background:rgba(255,255,255,0.7); border-radius:8px; padding:8px; flex:1; text-align:center;">
-                <div style="color:#64748B; font-size:10px;">📈 傾向</div>
-                <div style="font-size:20px; font-weight:700; color:{trend_color};">{trend}</div>
+            <div style="background:rgba(255,255,255,0.8); border-radius:8px; padding:8px; flex:1; text-align:center; border:1px solid rgba(0,0,0,0.05);">
+                <div style="color:#64748B !important; font-size:11px; font-weight:600; margin-bottom:2px;">📈 傾向</div>
+                <div style="font-size:22px; font-weight:900; color:{trend_color} !important; line-height:1;">{trend}</div>
             </div>
         </div>
     </div>
