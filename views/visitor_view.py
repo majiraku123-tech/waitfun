@@ -99,19 +99,29 @@ def render_visitor_view() -> None:
 
     sorted_events = get_sorted_events(filtered_events, sort_by=sort_option)
 
-    # ── イベントカード一覧 ────────────────────────────────────────
-    if not sorted_events:
-        st.info(f"「{selected_category}」カテゴリのイベントが見つかりません。")
-    else:
-        # 2列グリッドでカードを表示
-        for i in range(0, len(sorted_events), 2):
-            col1, col2 = st.columns(2)
-            with col1:
-                _render_event_with_quiz(sorted_events[i])
-            with col2:
-                if i + 1 < len(sorted_events):
-                    _render_event_with_quiz(sorted_events[i + 1])
+   # visitor_view.py の一部抜粋（修正ポイント）
 
+# ── イベントカード一覧 ────────────────────────────────────────
+if not sorted_events:
+    st.info(f"「{selected_category}」カテゴリのイベントが見つかりません。")
+else:
+    # 2列グリッドでカードを表示
+    for i in range(0, len(sorted_events), 2):
+        col1, col2 = st.columns(2)
+        with col1:
+            # st.write(render_event_card(...)) ではなく、関数を呼ぶだけ！
+            render_event_card(sorted_events[i])
+            # クイズ判定もここで行う（関数を分けない方が安定します）
+            m1 = sorted_events[i].get_metrics()
+            if m1.wait_minutes >= 15:
+                render_waiting_quiz(sorted_events[i].id, m1.wait_minutes)
+                
+        with col2:
+            if i + 1 < len(sorted_events):
+                render_event_card(sorted_events[i + 1])
+                m2 = sorted_events[i + 1].get_metrics()
+                if m2.wait_minutes >= 15:
+                    render_waiting_quiz(sorted_events[i + 1].id, m2.wait_minutes)
     # ── 凡例 ─────────────────────────────────────────────────────
     _render_legend()
 
