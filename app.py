@@ -266,7 +266,7 @@ def render_sidebar() -> str:
     """, unsafe_allow_html=True)
     # --- ここまで ---
 
-            st.markdown(f"""
+        st.markdown(f"""
             <div style="font-size: 11px; color: #94A3B8; margin-bottom: 8px;">📊 現在の状況</div>
             <div style="font-size: 12px; color: #CBD5E1;">
                 🎪 開催中: {open_count}件<br>
