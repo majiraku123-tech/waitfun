@@ -10,14 +10,9 @@ import streamlit as st
 from core.data_manager import Event
 from core.queue_models import QueueMetrics, calculate_trend, get_recommendation_reason
 
-
 def render_event_card(event: Event, show_details: bool = True) -> None:
     """
     1件のイベントカードをStreamlitコンポーネントとして描画する。
-
-    Args:
-        event       : 表示対象のEventオブジェクト
-        show_details: 詳細情報（利用率・履歴）を表示するかどうか
     """
     metrics = event.get_metrics()
 
@@ -28,7 +23,7 @@ def render_event_card(event: Event, show_details: bool = True) -> None:
     # トレンド計算
     history_lengths = [h.queue_length for h in event.history]
     trend = calculate_trend(history_lengths)
-    trend_color = {"↑": "#EF4444", "↓": "#22C55E", "→": "#6B7280"}[trend]
+    trend_color = {"↑": "#EF4444", "↓": "#22C55E", "→": "#6B7280"}.get(trend, "#6B7280")
 
     # 営業状況バッジ
     open_badge = "🟢 営業中" if event.is_open else "⛔ 営業終了"
@@ -46,7 +41,6 @@ def render_event_card(event: Event, show_details: bool = True) -> None:
         padding: 16px 20px;
         margin-bottom: 12px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        position: relative;
     ">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
             <div>
