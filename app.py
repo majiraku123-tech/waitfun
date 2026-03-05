@@ -178,88 +178,33 @@ def initialize_session_state() -> None:
 # サイドバー
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def render_sidebar() -> str:
+def render_sidebar():
     """
-    サイドバーのナビゲーションを描画し、選択されたタブ名を返す。
-
-    Returns:
-        str: 選択されたタブ（"visitor" / "staff" / "admin"）
+    サイドバーの描画と統計計算
     """
-    from core.security import get_current_role, ROLES
+    # 1. 最初に session_state からイベントリストを取得する（これが抜けていました）
+    events = st.session_state.get("events", [])
+    
+    st.sidebar.title("🎮 メニュー")
 
-    with st.sidebar:
-        # ロゴ・タイトル
-        st.markdown("""
-        <div style="text-align: center; padding: 16px 0 24px;">
-            <div style="font-size: 40px;">🎪</div>
-            <div style="font-size: 18px; font-weight: 800; color: #F0F9FF; letter-spacing: -0.5px;">
-                FestivalFlow AI
-            </div>
-            <div style="font-size: 11px; color: #94A3B8; margin-top: 4px;">
-                文化祭混雑ナビ v1.0
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("---")
-
-        # 現在のロール表示
-        current_role = get_current_role()
-        role_info = ROLES[current_role]
-        role_colors = {"VISITOR": "#64748B", "STAFF": "#22C55E", "ADMIN": "#A855F7"}
-        role_color = role_colors[current_role]
-        st.markdown(f"""
-        <div style="
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 10px 14px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255,255,255,0.15);
-        ">
-            <div style="font-size: 11px; color: #94A3B8;">現在のロール</div>
-            <div style="font-size: 14px; font-weight: 700; color: {role_color}; margin-top: 2px;">
-                {role_info['label']}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # ナビゲーションメニュー
-        nav_options = {
-            "🙋 来場者": "visitor",
-            "📋 担当者": "staff",
-            "🔐 管理者": "admin",
-        }
-
-        selected_label = st.radio(
-            "ナビゲーション",
-            options=list(nav_options.keys()),
-            index=0,
-            label_visibility="collapsed",
-        )
-        selected_tab = nav_options[selected_label]
-
-        st.markdown("---")
-
-        # イベント数サマリー
-       # --- サイドバー内の統計表示部分（ここから入れ替え） ---
-    # 全イベントから開催中のものを抽出（属性がなくてもTrueとする安全設計）
-    # --- サイドバー計算と描画の開始 ---
-    # 開催中のイベントを安全に取得
+    # 2. 開催中のイベントを安全に計算
+    # getattr(e, 'is_open', True) により、属性がなくてもエラーを回避
     open_events = [e for e in events if getattr(e, 'is_open', True)]
 
     if open_events:
         wait_list = []
         for e in open_events:
             try:
+                # get_metrics() が存在するか、実行できるかを確認
                 m = e.get_metrics()
                 wait_list.append(m.wait_minutes)
-            except:
+            except Exception:
                 continue
         avg_wait = sum(wait_list) / len(wait_list) if wait_list else 0
     else:
         avg_wait = 0
 
-    # 統計情報の表示（!importantで文字色を白に強制）
+    # 3. 統計情報の描画（!important でダークモード対策）
     st.sidebar.markdown(f"""
         <div style="background: rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;">
             <div style="color: rgba(255,255,255,0.8) !important; font-size: 12px; font-weight: 600;">現在の平均待ち時間</div>
@@ -269,7 +214,7 @@ def render_sidebar() -> str:
         </div>
     """, unsafe_allow_html=True)
 
-    # タブ選択メニュー（ここもインデントに注意して配置）
+    # 4. ナビゲーション
     tabs = {
         "visitor": "🏠 来場者ホーム",
         "map": "🗺️ エリアマップ",
