@@ -243,6 +243,8 @@ def render_sidebar() -> str:
         # イベント数サマリー
        # --- サイドバー内の統計表示部分（ここから入れ替え） ---
     # 全イベントから開催中のものを抽出（属性がなくてもTrueとする安全設計）
+    # --- サイドバー計算と描画の開始 ---
+    # 開催中のイベントを安全に取得
     open_events = [e for e in events if getattr(e, 'is_open', True)]
 
     if open_events:
@@ -251,45 +253,37 @@ def render_sidebar() -> str:
             try:
                 m = e.get_metrics()
                 wait_list.append(m.wait_minutes)
-            except Exception:
+            except:
                 continue
         avg_wait = sum(wait_list) / len(wait_list) if wait_list else 0
     else:
         avg_wait = 0
 
-    # 統計の表示（デザイン維持）
+    # 統計情報の表示（!importantで文字色を白に強制）
     st.sidebar.markdown(f"""
-        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);">
-            <div style="color: rgba(255,255,255,0.7); font-size: 12px;">現在の平均待ち時間</div>
-            <div style="color: white; font-size: 28px; font-weight: 800;">{int(avg_wait)}<span style="font-size: 14px; margin-left: 4px;">分</span></div>
+        <div style="background: rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px;">
+            <div style="color: rgba(255,255,255,0.8) !important; font-size: 12px; font-weight: 600;">現在の平均待ち時間</div>
+            <div style="color: white !important; font-size: 32px; font-weight: 800; line-height: 1;">
+                {int(avg_wait)}<span style="font-size: 14px; margin-left: 4px; opacity: 0.8;">分</span>
+            </div>
         </div>
     """, unsafe_allow_html=True)
-    # --- ここまで ---
 
-        st.markdown(f"""
-            <div style="font-size: 11px; color: #94A3B8; margin-bottom: 8px;">📊 現在の状況</div>
-            <div style="font-size: 12px; color: #CBD5E1;">
-                🎪 開催中: {open_count}件<br>
-                ⏱️ 平均待ち: {avg_wait}分<br>
-                🚨 異常値: {sum(1 for e in events if e.anomaly_flag)}件
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.markdown("---")
-
-        # 技術情報（ポートフォリオ用）
-        st.markdown("""
-        <div style="font-size: 11px; color: #64748B; line-height: 1.6;">
-            <b style="color: #94A3B8;">技術スタック</b><br>
-            📐 M/M/1待ち行列理論<br>
-            🔐 ゼロトラスト RBAC<br>
-            🎲 モンテカルロ法<br>
-            📊 Plotly インタラクティブグラフ<br>
-            ⚡ Streamlit リアルタイム更新
-        </div>
-        """, unsafe_allow_html=True)
-
-    return selected_tab
+    # タブ選択メニュー（ここもインデントに注意して配置）
+    tabs = {
+        "visitor": "🏠 来場者ホーム",
+        "map": "🗺️ エリアマップ",
+        "admin": "🔐 管理者パネル"
+    }
+    
+    selected = st.sidebar.radio(
+        "メニューを選択",
+        options=list(tabs.keys()),
+        format_func=lambda x: tabs[x],
+        label_visibility="collapsed"
+    )
+    
+    return selected
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
