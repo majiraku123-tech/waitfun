@@ -19,34 +19,31 @@ def render_visitor_view() -> None:
     来場者向けのメイン画面を描画する。
     クオリティを維持しつつ、堅牢なエラーハンドリングを実装。
     """
-    events: list[Event] = st.session_state.get("events", [])
-
-    if not events:
-        st.info("🎪 イベント情報を読み込み中です...")
+    """高級感のある統計タイルを表示（視認性向上版）"""
+    open_events = [e for e in events if e.is_open]
+    if not open_events:
         return
 
-    # ── 1. 高級感のあるヘッダー（クオリティ維持） ──
-    st.markdown("""
-    <div style="
-        background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 50%, #075985 100%);
-        border-radius: 20px;
-        padding: 28px 32px;
-        margin-bottom: 24px;
-        color: white;
-        box-shadow: 0 8px 32px rgba(14, 165, 233, 0.3);
-    ">
-        <div style="font-size: 32px; font-weight: 900; letter-spacing: -0.5px;">
-            🎪 FestivalFlow AI
-        </div>
-        <div style="font-size: 16px; opacity: 0.9; margin-top: 4px;">
-            M/M/1待ち行列理論によるリアルタイム混雑ナビ
-        </div>
-        <div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
-            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 999px; font-size: 12px;">📊 リアルタイム解析中</span>
-            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 999px; font-size: 12px;">🤖 AI穴場推薦</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    avg_wait = sum(e.get_metrics().wait_minutes for e in open_events) / len(open_events)
+    
+    c1, c2, c3, c4 = st.columns(4)
+    data = [
+        (c1, "🎪", "開催中", f"{len(open_events)}", "件", "#0EA5E9"),
+        (c2, "⏱️", "平均待ち", f"{int(avg_wait)}", "分", "#F97316"),
+        (c3, "🟢", "空き", f"{sum(1 for e in open_events if e.get_metrics().status == 'LOW')}", "件", "#22C55E"),
+        (c4, "🚨", "異常値", f"{sum(1 for e in events if e.anomaly_flag)}", "件", "#EF4444"),
+    ]
+    
+    for col, icon, label, val, unit, color in data:
+        with col:
+            st.markdown(f"""
+            <div style="background:white; border-radius:12px; padding:15px; text-align:center; border:1px solid #E2E8F0; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                <div style="font-size:20px;">{icon}</div>
+                <div style="font-size:11px; color:#64748B !important; font-weight:600; margin:4px 0;">{label}</div>
+                <div style="font-size:24px; font-weight:800; color:{color} !important; line-height:1;">{val}<span style="font-size:12px; color:#94A3B8 !important;">{unit}</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
     # ── 2. AI穴場推薦バナー ──
     render_recommended_banner(events)
