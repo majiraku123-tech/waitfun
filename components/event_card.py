@@ -7,78 +7,51 @@ FestivalFlow AI — components/event_card.py
 """
 
 import streamlit as st
-from core.data_manager import Event
-from core.queue_models import QueueMetrics, calculate_trend, get_recommendation_reason
+from core.queue_models import calculate_trend
 
-def render_event_card(event: Event, show_details: bool = True) -> None:
-    """
-    1件のイベントカードをStreamlitコンポーネントとして描画する。
-    """
+def render_event_card(event, show_details=True):
     metrics = event.get_metrics()
-
-    # 混雑度に応じた背景色グラデーション
-    bg_color = _get_card_bg_color(metrics.status)
-    border_color = metrics.color
-
-    # トレンド計算
     history_lengths = [h.queue_length for h in event.history]
     trend = calculate_trend(history_lengths)
     trend_color = {"↑": "#EF4444", "↓": "#22C55E", "→": "#6B7280"}.get(trend, "#6B7280")
-
-    # 営業状況バッジ
-    open_badge = "🟢 営業中" if event.is_open else "⛔ 営業終了"
-
-    # カードHTMLの生成
-    anomaly_badge = ""
-    if event.anomaly_flag:
-        anomaly_badge = '<span style="background:#7F1D1D;color:white;padding:2px 8px;border-radius:4px;font-size:11px;margin-left:8px;">⚠️ 異常値</span>'
-
+    
+    # 営業状況
+    open_status = "🟢 営業中" if event.is_open else "⛔ 営業終了"
+    
+    # カードのHTMLデザイン
     card_html = f"""
-    <div style="
-        background: {bg_color};
-        border: 2px solid {border_color};
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    ">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+    <div style="background:linear-gradient(135deg, #ffffff, #f8fafc); border:2px solid {metrics.color}; border-radius:15px; padding:20px; margin-bottom:15px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+        <div style="display:flex; justify-content:space-between;">
             <div>
-                <span style="font-size:28px;">{event.emoji}</span>
-                <span style="font-size:18px; font-weight:700; color:#0F172A; margin-left:8px;">{event.name}</span>
-                {anomaly_badge}
-                <div style="color:#475569; font-size:13px; margin-top:4px;">
-                    📍 {event.classroom}（{event.floor}F）&nbsp;｜&nbsp;
-                    <span style="background:#E2E8F0;padding:2px 8px;border-radius:999px;font-size:12px;">{event.category}</span>
-                    &nbsp;｜&nbsp;{open_badge}
+                <span style="font-size:30px;">{event.emoji}</span>
+                <span style="font-size:20px; font-weight:bold; color:#1e293b; margin-left:10px;">{event.name}</span>
+                <div style="font-size:13px; color:#64748b; margin-top:5px;">
+                    📍 {event.classroom} ({event.floor}F) | {event.category} | {open_status}
                 </div>
             </div>
             <div style="text-align:right;">
-                <div style="font-size:32px; font-weight:800; color:{border_color};">
-                    {metrics.wait_minutes}<span style="font-size:14px; font-weight:500;">分待ち</span>
-                </div>
-                <div style="color:{border_color}; font-weight:600; font-size:14px;">
-                    {metrics.emoji} {metrics.label}
-                </div>
+                <div style="font-size:32px; font-weight:800; color:{metrics.color};">{metrics.wait_minutes}<span style="font-size:14px;">分待ち</span></div>
+                <div style="font-size:14px; font-weight:600; color:{metrics.color};">{metrics.emoji} {metrics.label}</div>
             </div>
         </div>
-        <div style="display:flex; gap:16px; margin-top:12px; flex-wrap:wrap;">
-            <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:8px 12px;min-width:100px;">
-                <div style="color:#64748B;font-size:11px;font-weight:600;">🚶 現在の行列</div>
-                <div style="font-size:20px;font-weight:700;color:#0F172A;">{event.queue_length}<span style="font-size:12px;">人</span></div>
+        <div style="display:flex; gap:15px; margin-top:15px;">
+            <div style="background:#f1f5f9; padding:10px; border-radius:10px; flex:1; text-align:center;">
+                <div style="font-size:11px; color:#64748b;">🚶 行列</div>
+                <div style="font-size:18px; font-weight:bold;">{event.queue_length}人</div>
             </div>
-            <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:8px 12px;min-width:100px;">
-                <div style="color:#64748B;font-size:11px;font-weight:600;">📊 利用率ρ</div>
-                <div style="font-size:20px;font-weight:700;color:#0F172A;">{round(metrics.utilization * 100)}<span style="font-size:12px;">%</span></div>
+            <div style="background:#f1f5f9; padding:10px; border-radius:10px; flex:1; text-align:center;">
+                <div style="font-size:11px; color:#64748b;">📊 利用率</div>
+                <div style="font-size:18px; font-weight:bold;">{int(metrics.utilization * 100)}%</div>
             </div>
-            <div style="background:rgba(255,255,255,0.7);border-radius:8px;padding:8px 12px;min-width:100px;">
-                <div style="color:#64748B;font-size:11px;font-weight:600;">📈 トレンド</div>
-                <div style="font-size:24px;font-weight:700;color:{trend_color};">{trend}</div>
+            <div style="background:#f1f5f9; padding:10px; border-radius:10px; flex:1; text-align:center;">
+                <div style="font-size:11px; color:#64748b;">📈 傾向</div>
+                <div style="font-size:22px; font-weight:bold; color:{trend_color};">{trend}</div>
             </div>
         </div>
     </div>
     """
     st.markdown(card_html, unsafe_allow_html=True)
+
 
 
 def render_recommended_banner(events: list[Event]) -> None:
