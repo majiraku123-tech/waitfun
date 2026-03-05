@@ -78,6 +78,14 @@ class Event:
     history: list = field(default_factory=list)
     last_updated_at: Optional[str] = None
     anomaly_flag: bool = False
+    # core/data_manager.py の Eventクラスの中に追加
+@property
+def is_open(self) -> bool:
+    """イベントが現在開催中かどうかを判定（例：24時間営業フラグなど）"""
+    # もし単純なフラグ管理なら self.status == "OPEN" など、
+    # あなたの設計に合わせて調整してください。
+    # とりあえずエラーを防ぐために True を返すようにしておきます。
+    return getattr(self, "_is_open", True)
 
     def get_metrics(self) -> QueueMetrics:
         """このイベントのM/M/1メトリクスを計算して返す。"""
