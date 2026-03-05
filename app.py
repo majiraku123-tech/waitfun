@@ -312,6 +312,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-else:
-    # Streamlitはモジュールとして実行されるため、else節でも呼び出す
-    main()
+# else: main() は削除します。Streamlitでは不要です。
